@@ -316,8 +316,7 @@ const App = () => {
             <option>Vitaminska bomba</option>
             <option>Infuzija</option>
             <option>Injekcija</option>
-            <option>Previjanje</option>
-            <option>Kontrola pritiska</option>
+            <option>Glutation 12000</option>
           </select>
 
           <div style={styles.gridTwo}>
@@ -491,8 +490,7 @@ const App = () => {
           ["Vitaminska bomba", "od 3000 RSD"],
           ["Infuzija", "od 2500 RSD"],
           ["Injekcija", "od 1000 RSD"],
-          ["Previjanje", "od 1500 RSD"],
-          ["Kontrola pritiska", "od 700 RSD"],
+          ["Glutation 12000", "cena po dogovoru"],
         ].map(([name, price]) => (
           <div key={name} style={styles.serviceCard}>
             <div>
