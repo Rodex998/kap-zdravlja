@@ -1,14 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-  PlusCircle,
-  Calendar,
   Activity,
+  Calendar,
   CheckCircle2,
-  XCircle,
+  FileText,
+  HeartPulse,
   MapPin,
   Phone,
-  FileText,
+  PlusCircle,
+  ShieldCheck,
+  Sparkles,
+  Syringe,
   Trash2,
+  XCircle,
 } from "lucide-react";
 
 import { initializeApp } from "firebase/app";
@@ -87,6 +91,41 @@ type Toast = {
   type: "success" | "error" | "";
 };
 
+const services = [
+  {
+    name: "Vitaminska bomba",
+    subtitle: "Infuziona vitaminska podrška",
+    description:
+      "Kombinacija tečnosti i vitamina za hidrataciju, oporavak i opštu podršku organizmu. Termin se potvrđuje nakon provere osnovnih podataka pacijenta.",
+    icon: "💧",
+    color: "linear-gradient(135deg, #dbeafe, #eff6ff)",
+  },
+  {
+    name: "Infuzija",
+    subtitle: "Infuziona terapija",
+    description:
+      "Primena infuzione terapije prema potrebi pacijenta i dogovoru sa medicinskim osobljem. Konačna primena zavisi od procene medicinskog osoblja.",
+    icon: "🩺",
+    color: "linear-gradient(135deg, #dcfce7, #f0fdf4)",
+  },
+  {
+    name: "Injekcija",
+    subtitle: "Injekciona terapija",
+    description:
+      "Davanje injekcione terapije od strane medicinskog osoblja. Usluga se zakazuje za pacijente koji imaju jasnu potrebu ili preporuku za terapiju.",
+    icon: "💉",
+    color: "linear-gradient(135deg, #fee2e2, #fff7ed)",
+  },
+  {
+    name: "Glutation 12000",
+    subtitle: "Glutation infuziona terapija",
+    description:
+      "Glutation 12000 je infuziona antioksidativna podrška organizmu. Pacijent pre zakazivanja dobija objašnjenje usluge i potvrđuje saglasnost za kontakt i termin.",
+    icon: "✨",
+    color: "linear-gradient(135deg, #f3e8ff, #eef2ff)",
+  },
+];
+
 const initialFormData: FormData = {
   pacijent: "",
   telefon: "",
@@ -103,6 +142,7 @@ const App = () => {
   const [activeTab, setActiveTab] = useState<"zakazi" | "lista" | "usluge">(
     "zakazi"
   );
+  const [showConsentModal, setShowConsentModal] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [termini, setTermini] = useState<Termin[]>([]);
@@ -115,6 +155,11 @@ const App = () => {
     message: "",
     type: "",
   });
+
+  const selectedService = useMemo(
+    () => services.find((item) => item.name === formData.usluga) || services[0],
+    [formData.usluga]
+  );
 
   useEffect(() => {
     const initAuth = async () => {
@@ -213,7 +258,7 @@ const App = () => {
     }
 
     if (!formData.saglasnost) {
-      showToast("Potrebna je saglasnost pacijenta za zakazivanje termina.", "error");
+      showToast("Pacijent mora da pročita i potvrdi saglasnost.", "error");
       return;
     }
 
@@ -222,12 +267,13 @@ const App = () => {
         collection(db, "artifacts", appId, "users", user.uid, "termini"),
         {
           ...formData,
+          opisUsluge: selectedService.description,
           status: "Zakazano",
         }
       );
 
       setFormData(initialFormData);
-      showToast("Termin je uspešno zakazan.", "success");
+      showToast("Termin je uspešno poslat.", "success");
       setActiveTab("lista");
     } catch (error) {
       console.error("Greška pri zakazivanju:", error);
@@ -276,6 +322,20 @@ const App = () => {
 
   const renderZakazi = () => (
     <div style={styles.page}>
+      <div style={styles.heroCard}>
+        <div>
+          <p style={styles.kicker}>Infuziona terapija</p>
+          <h2 style={styles.heroTitle}>Zakažite termin brzo i jednostavno</h2>
+          <p style={styles.heroText}>
+            Izaberite uslugu, termin i ostavite kontakt. Medicinsko osoblje vas
+            kontaktira radi potvrde.
+          </p>
+        </div>
+        <div style={styles.heroIcon}>
+          <HeartPulse size={34} />
+        </div>
+      </div>
+
       <div style={styles.card}>
         <div style={styles.titleRow}>
           <div>
@@ -288,7 +348,7 @@ const App = () => {
         <form onSubmit={handleCreateTermin} style={styles.form}>
           <input
             type="text"
-            placeholder="Ime pacijenta"
+            placeholder="Ime i prezime pacijenta"
             value={formData.pacijent}
             onChange={(e) =>
               setFormData({ ...formData, pacijent: e.target.value })
@@ -313,11 +373,20 @@ const App = () => {
             }
             style={styles.input}
           >
-            <option>Vitaminska bomba</option>
-            <option>Infuzija</option>
-            <option>Injekcija</option>
-            <option>Glutation 12000</option>
+            {services.map((item) => (
+              <option key={item.name}>{item.name}</option>
+            ))}
           </select>
+
+          <div style={{ ...styles.servicePreview, background: selectedService.color }}>
+            <div style={styles.serviceEmoji}>{selectedService.icon}</div>
+            <div>
+              <h3 style={styles.servicePreviewTitle}>{selectedService.name}</h3>
+              <p style={styles.servicePreviewText}>
+                {selectedService.description}
+              </p>
+            </div>
+          </div>
 
           <div style={styles.gridTwo}>
             <input
@@ -369,19 +438,36 @@ const App = () => {
             Terenska poseta
           </label>
 
-          <label style={styles.checkboxRow}>
-            <input
-              type="checkbox"
-              checked={formData.saglasnost}
-              onChange={(e) =>
-                setFormData({ ...formData, saglasnost: e.target.checked })
-              }
-            />
-            Pacijent je pročitao objašnjenje usluge i daje saglasnost za zakazivanje termina
-          </label>
+          <div style={styles.consentSmallBox}>
+            <div style={styles.consentSmallHeader}>
+              <ShieldCheck size={20} color="#2563eb" />
+              <strong>Saglasnost pacijenta</strong>
+            </div>
+            <p style={styles.consentSmallText}>
+              Pre slanja termina pacijent treba da pročita šta prihvata.
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowConsentModal(true)}
+              style={styles.secondaryButton}
+            >
+              Pročitaj saglasnost
+            </button>
+
+            <label style={styles.checkboxRow}>
+              <input
+                type="checkbox"
+                checked={formData.saglasnost}
+                onChange={(e) =>
+                  setFormData({ ...formData, saglasnost: e.target.checked })
+                }
+              />
+              Pročitao/la sam saglasnost i prihvatam zakazivanje termina
+            </label>
+          </div>
 
           <button type="submit" style={styles.primaryButton}>
-            Zakaži
+            Zakaži termin
           </button>
         </form>
       </div>
@@ -477,48 +563,40 @@ const App = () => {
 
   const renderUsluge = () => (
     <div style={styles.page}>
-      <div style={styles.titleRow}>
+      <div style={styles.heroCard}>
         <div>
-          <p style={styles.kicker}>Infuzione terapije</p>
-          <h2 style={styles.title}>Usluge</h2>
+          <p style={styles.kicker}>Kap Zdravlja</p>
+          <h2 style={styles.heroTitle}>Infuzione usluge</h2>
+          <p style={styles.heroText}>
+            Pregled usluga koje pacijent može da izabere prilikom zakazivanja
+            termina.
+          </p>
         </div>
-        <Activity color="#2563eb" />
+        <div style={styles.heroIcon}>
+          <Sparkles size={34} />
+        </div>
       </div>
 
       <div style={styles.list}>
-        {[
-          [
-            "Vitaminska bomba",
-            "Infuziona terapija sa kombinacijom vitamina i tečnosti. Namenjena je za oporavak, hidrataciju i podršku organizmu po proceni medicinskog osoblja."
-          ],
-          [
-            "Infuzija",
-            "Primena infuzione terapije prema potrebi pacijenta i dogovoru sa medicinskim osobljem. Termin se zakazuje nakon osnovnih podataka i saglasnosti pacijenta."
-          ],
-          [
-            "Injekcija",
-            "Davanje propisane injekcione terapije od strane medicinskog osoblja. Usluga se radi samo kada pacijent ima jasnu potrebu ili preporuku za terapiju."
-          ],
-          [
-            "Glutation 12000",
-            "Glutation infuziona terapija. Koristi se kao antioksidativna podrška organizmu i zakazuje se isključivo uz prethodno objašnjenje usluge i saglasnost pacijenta."
-          ],
-        ].map(([name, description]) => (
-          <div key={name} style={styles.serviceCard}>
+        {services.map((item) => (
+          <div key={item.name} style={{ ...styles.serviceCard, background: item.color }}>
+            <div style={styles.serviceImage}>{item.icon}</div>
             <div>
-              <h3 style={styles.terminName}>{name}</h3>
-              <p style={styles.terminService}>{description}</p>
+              <p style={styles.kicker}>{item.subtitle}</p>
+              <h3 style={styles.terminName}>{item.name}</h3>
+              <p style={styles.terminService}>{item.description}</p>
             </div>
           </div>
         ))}
       </div>
 
       <div style={styles.consentBox}>
-        <h3 style={styles.terminName}>Saglasnost pacijenta</h3>
+        <ShieldCheck color="#2563eb" />
+        <h3 style={styles.terminName}>Važna napomena</h3>
         <p style={styles.consentText}>
-          Zakazivanjem termina pacijent potvrđuje da je upoznat sa osnovnim opisom usluge,
-          da daje tačne kontakt podatke i da pristaje da bude kontaktiran radi potvrde termina.
-          Konačna primena usluge zavisi od procene medicinskog osoblja.
+          Zakazivanje termina ne predstavlja konačnu medicinsku procenu. Nakon
+          slanja zahteva, medicinsko osoblje može kontaktirati pacijenta radi
+          potvrde, dodatnih pitanja i dogovora oko termina.
         </p>
       </div>
     </div>
@@ -587,6 +665,50 @@ const App = () => {
           </div>
         )}
 
+        {showConsentModal && (
+          <div
+            style={styles.modalBackdrop}
+            onClick={() => setShowConsentModal(false)}
+          >
+            <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+              <ShieldCheck size={44} color="#2563eb" />
+              <h2>Saglasnost za zakazivanje</h2>
+              <p style={styles.modalText}>
+                Pacijent potvrđuje da je pročitao osnovno objašnjenje izabrane
+                usluge, da ostavlja tačne kontakt podatke i da pristaje da bude
+                kontaktiran radi potvrde termina.
+              </p>
+              <p style={styles.modalText}>
+                Pacijent razume da zakazivanje termina ne predstavlja konačnu
+                medicinsku odluku. Konačna primena usluge zavisi od procene
+                medicinskog osoblja i dogovora sa pacijentom.
+              </p>
+              <p style={styles.modalText}>
+                U slučaju tegoba, alergija, trudnoće, hroničnih bolesti ili
+                uzimanja terapije, pacijent je dužan da to napomene pre
+                pružanja usluge.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setFormData({ ...formData, saglasnost: true });
+                  setShowConsentModal(false);
+                }}
+                style={styles.primaryButton}
+              >
+                Prihvatam saglasnost
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowConsentModal(false)}
+                style={{ ...styles.secondaryButton, marginTop: 10 }}
+              >
+                Zatvori
+              </button>
+            </div>
+          </div>
+        )}
+
         {showQrModal && (
           <div
             style={styles.modalBackdrop}
@@ -595,7 +717,7 @@ const App = () => {
             <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
               <FileText size={44} color="#2563eb" />
               <h2>Kap Zdravlja</h2>
-              <p style={{ color: "#64748b" }}>
+              <p style={styles.modalText}>
                 Ovde kasnije može da ide QR kod, PDF saglasnost ili dokument za
                 pacijenta.
               </p>
@@ -617,7 +739,8 @@ const App = () => {
 const styles: Record<string, React.CSSProperties> = {
   appBackground: {
     minHeight: "100vh",
-    background: "linear-gradient(135deg, #eef4ff, #f8fafc)",
+    background:
+      "radial-gradient(circle at top, #dbeafe 0, #eef4ff 36%, #f8fafc 100%)",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
@@ -656,7 +779,7 @@ const styles: Record<string, React.CSSProperties> = {
     margin: "0 0 4px",
     fontSize: 12,
     color: "#64748b",
-    fontWeight: 800,
+    fontWeight: 900,
     textTransform: "uppercase",
     letterSpacing: "0.08em",
   },
@@ -678,6 +801,38 @@ const styles: Record<string, React.CSSProperties> = {
   page: {
     padding: 18,
     paddingBottom: 28,
+  },
+  heroCard: {
+    background: "linear-gradient(135deg, #2563eb, #60a5fa)",
+    color: "#ffffff",
+    borderRadius: 26,
+    padding: 18,
+    marginBottom: 16,
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 14,
+    boxShadow: "0 14px 38px rgba(37, 99, 235, 0.22)",
+  },
+  heroTitle: {
+    margin: 0,
+    fontSize: 22,
+    fontWeight: 950,
+    lineHeight: 1.1,
+  },
+  heroText: {
+    margin: "8px 0 0",
+    fontSize: 14,
+    lineHeight: 1.45,
+    color: "rgba(255,255,255,0.9)",
+    fontWeight: 650,
+  },
+  heroIcon: {
+    minWidth: 58,
+    height: 58,
+    borderRadius: 20,
+    display: "grid",
+    placeItems: "center",
+    background: "rgba(255,255,255,0.18)",
   },
   card: {
     background: "#ffffff",
@@ -719,11 +874,12 @@ const styles: Record<string, React.CSSProperties> = {
   },
   checkboxRow: {
     display: "flex",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: 9,
-    fontWeight: 700,
+    fontWeight: 800,
     color: "#334155",
     fontSize: 14,
+    lineHeight: 1.25,
   },
   primaryButton: {
     width: "100%",
@@ -735,6 +891,65 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 900,
     fontSize: 16,
     cursor: "pointer",
+  },
+  secondaryButton: {
+    width: "100%",
+    border: "1px solid #bfdbfe",
+    borderRadius: 14,
+    padding: "11px 14px",
+    background: "#eff6ff",
+    color: "#2563eb",
+    fontWeight: 900,
+    cursor: "pointer",
+  },
+  servicePreview: {
+    borderRadius: 20,
+    padding: 14,
+    display: "flex",
+    gap: 12,
+    border: "1px solid rgba(148, 163, 184, 0.25)",
+  },
+  serviceEmoji: {
+    width: 44,
+    height: 44,
+    borderRadius: 16,
+    background: "#ffffff",
+    display: "grid",
+    placeItems: "center",
+    fontSize: 24,
+    boxShadow: "0 8px 22px rgba(15, 23, 42, 0.08)",
+  },
+  servicePreviewTitle: {
+    margin: 0,
+    fontWeight: 950,
+    fontSize: 16,
+  },
+  servicePreviewText: {
+    margin: "5px 0 0",
+    color: "#475569",
+    fontSize: 13,
+    lineHeight: 1.45,
+    fontWeight: 650,
+  },
+  consentSmallBox: {
+    background: "#f8fafc",
+    border: "1px solid #dbe3ef",
+    borderRadius: 18,
+    padding: 14,
+    display: "grid",
+    gap: 10,
+  },
+  consentSmallHeader: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    color: "#0f172a",
+  },
+  consentSmallText: {
+    margin: 0,
+    color: "#64748b",
+    fontSize: 13,
+    fontWeight: 650,
   },
   filterRow: {
     display: "flex",
@@ -794,9 +1009,10 @@ const styles: Record<string, React.CSSProperties> = {
   },
   terminService: {
     margin: 0,
-    color: "#64748b",
+    color: "#475569",
     fontWeight: 700,
     fontSize: 14,
+    lineHeight: 1.45,
   },
   badge: {
     borderRadius: 999,
@@ -857,12 +1073,24 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 6,
   },
   serviceCard: {
-    background: "#ffffff",
     border: "1px solid #e2e8f0",
-    borderRadius: 22,
+    borderRadius: 24,
     padding: 16,
-    display: "block",
-    gap: 12,
+    display: "flex",
+    gap: 14,
+    alignItems: "flex-start",
+    boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  },
+  serviceImage: {
+    width: 56,
+    height: 56,
+    minWidth: 56,
+    borderRadius: 20,
+    background: "#ffffff",
+    display: "grid",
+    placeItems: "center",
+    fontSize: 28,
+    boxShadow: "0 10px 24px rgba(15, 23, 42, 0.08)",
   },
   consentBox: {
     marginTop: 18,
@@ -877,7 +1105,7 @@ const styles: Record<string, React.CSSProperties> = {
     color: "#475569",
     fontSize: 14,
     lineHeight: 1.55,
-    fontWeight: 600,
+    fontWeight: 650,
   },
   bottomNav: {
     height: 82,
@@ -938,6 +1166,14 @@ const styles: Record<string, React.CSSProperties> = {
     padding: 24,
     textAlign: "center",
     boxShadow: "0 22px 65px rgba(15, 23, 42, 0.32)",
+    maxHeight: "82vh",
+    overflowY: "auto",
+  },
+  modalText: {
+    color: "#475569",
+    lineHeight: 1.55,
+    fontWeight: 650,
+    fontSize: 14,
   },
 };
 
