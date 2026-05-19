@@ -149,6 +149,7 @@ const App = () => {
     "zakazi"
   );
   const [showConsentModal, setShowConsentModal] = useState(false);
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [termini, setTermini] = useState<Termin[]>([]);
@@ -268,8 +269,12 @@ const App = () => {
       return;
     }
 
-    if (!formData.prihvataCenu) {
-      showToast("Pacijent mora da potvrdi da prihvata cenu usluge.", "error");
+    setShowInvoiceModal(true);
+  };
+
+  const confirmTermin = async () => {
+    if (!user) {
+      showToast("Korisnik još nije učitan. Sačekaj par sekundi.", "error");
       return;
     }
 
@@ -278,11 +283,14 @@ const App = () => {
         collection(db, "artifacts", appId, "users", user.uid, "termini"),
         {
           ...formData,
+          prihvataCenu: true,
           opisUsluge: selectedService.description,
+          cena: selectedService.price,
           status: "Zakazano",
         }
       );
 
+      setShowInvoiceModal(false);
       setFormData(initialFormData);
       showToast("Termin je uspešno poslat.", "success");
       setActiveTab("lista");
@@ -478,7 +486,7 @@ const App = () => {
           </div>
 
           <button type="submit" style={styles.primaryButton}>
-            Zakaži termin
+            Pregledaj račun i zakaži
           </button>
         </form>
       </div>
@@ -673,6 +681,74 @@ const App = () => {
             }}
           >
             {toast.message}
+          </div>
+        )}
+
+        {showInvoiceModal && (
+          <div
+            style={styles.modalBackdrop}
+            onClick={() => setShowInvoiceModal(false)}
+          >
+            <div style={styles.receiptModal} onClick={(e) => e.stopPropagation()}>
+              <div style={styles.receiptHeader}>
+                <div>
+                  <p style={styles.kicker}>Pregled zakazivanja</p>
+                  <h2 style={styles.receiptTitle}>Račun za uslugu</h2>
+                </div>
+                <div style={styles.receiptIcon}>{selectedService.icon}</div>
+              </div>
+
+              <div style={{ ...styles.receiptService, background: selectedService.color }}>
+                <p style={styles.kicker}>Izabrana usluga</p>
+                <h3 style={styles.receiptServiceName}>{selectedService.name}</h3>
+                <p style={styles.receiptDescription}>{selectedService.description}</p>
+              </div>
+
+              <div style={styles.receiptRows}>
+                <div style={styles.receiptRow}>
+                  <span>Pacijent</span>
+                  <strong>{formData.pacijent}</strong>
+                </div>
+                <div style={styles.receiptRow}>
+                  <span>Telefon</span>
+                  <strong>{formData.telefon}</strong>
+                </div>
+                <div style={styles.receiptRow}>
+                  <span>Datum</span>
+                  <strong>{formData.datum}</strong>
+                </div>
+                <div style={styles.receiptRow}>
+                  <span>Vreme</span>
+                  <strong>{formData.vreme}</strong>
+                </div>
+                <div style={styles.receiptRow}>
+                  <span>Terenska poseta</span>
+                  <strong>{formData.terenski ? "Da" : "Ne"}</strong>
+                </div>
+              </div>
+
+              <div style={styles.receiptTotal}>
+                <span>Ukupno za izabranu uslugu</span>
+                <strong>{selectedService.price}</strong>
+              </div>
+
+              <p style={styles.receiptNotice}>
+                Potvrdom pacijent prihvata cenu izabrane usluge i šalje zahtev
+                za zakazivanje termina. Termin se dodatno potvrđuje kontaktom.
+              </p>
+
+              <button type="button" onClick={confirmTermin} style={styles.primaryButton}>
+                Prihvatam cenu i šaljem termin
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowInvoiceModal(false)}
+                style={{ ...styles.secondaryButton, marginTop: 10 }}
+              >
+                Ne prihvatam
+              </button>
+            </div>
           </div>
         )}
 
@@ -1161,6 +1237,94 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 900,
     zIndex: 20,
     boxShadow: "0 14px 35px rgba(15, 23, 42, 0.18)",
+  },
+  receiptModal: {
+    background: "#ffffff",
+    borderRadius: 30,
+    padding: 22,
+    boxShadow: "0 26px 80px rgba(15, 23, 42, 0.38)",
+    maxHeight: "86vh",
+    overflowY: "auto",
+    width: "100%",
+    maxWidth: 380,
+    border: "1px solid #dbeafe",
+  },
+  receiptHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 14,
+    marginBottom: 14,
+  },
+  receiptTitle: {
+    margin: 0,
+    fontSize: 25,
+    fontWeight: 950,
+    letterSpacing: "-0.03em",
+  },
+  receiptIcon: {
+    width: 58,
+    height: 58,
+    minWidth: 58,
+    borderRadius: 20,
+    display: "grid",
+    placeItems: "center",
+    fontSize: 30,
+    background: "#eff6ff",
+    boxShadow: "0 12px 28px rgba(37, 99, 235, 0.16)",
+  },
+  receiptService: {
+    borderRadius: 22,
+    padding: 15,
+    marginBottom: 14,
+    border: "1px solid rgba(148, 163, 184, 0.25)",
+  },
+  receiptServiceName: {
+    margin: "0 0 6px",
+    fontSize: 19,
+    fontWeight: 950,
+  },
+  receiptDescription: {
+    margin: 0,
+    color: "#475569",
+    fontSize: 13,
+    lineHeight: 1.45,
+    fontWeight: 650,
+  },
+  receiptRows: {
+    display: "grid",
+    gap: 9,
+    marginBottom: 14,
+  },
+  receiptRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 12,
+    borderBottom: "1px solid #e2e8f0",
+    paddingBottom: 8,
+    color: "#475569",
+    fontSize: 14,
+  },
+  receiptTotal: {
+    borderRadius: 20,
+    padding: 16,
+    background: "linear-gradient(135deg, #2563eb, #60a5fa)",
+    color: "#ffffff",
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 12,
+    alignItems: "center",
+    fontSize: 16,
+    fontWeight: 900,
+    marginBottom: 12,
+    boxShadow: "0 16px 34px rgba(37, 99, 235, 0.25)",
+  },
+  receiptNotice: {
+    margin: "0 0 14px",
+    color: "#475569",
+    fontSize: 13,
+    lineHeight: 1.5,
+    fontWeight: 650,
   },
   modalBackdrop: {
     position: "absolute",
