@@ -213,7 +213,7 @@ const App = () => {
     }
 
     if (!formData.saglasnost) {
-      showToast("Potrebna je saglasnost pacijenta.", "error");
+      showToast("Potrebna je saglasnost pacijenta za zakazivanje termina.", "error");
       return;
     }
 
@@ -377,7 +377,7 @@ const App = () => {
                 setFormData({ ...formData, saglasnost: e.target.checked })
               }
             />
-            Pacijent je dao saglasnost
+            Pacijent je pročitao objašnjenje usluge i daje saglasnost za zakazivanje termina
           </label>
 
           <button type="submit" style={styles.primaryButton}>
@@ -479,7 +479,7 @@ const App = () => {
     <div style={styles.page}>
       <div style={styles.titleRow}>
         <div>
-          <p style={styles.kicker}>Cenovnik</p>
+          <p style={styles.kicker}>Infuzione terapije</p>
           <h2 style={styles.title}>Usluge</h2>
         </div>
         <Activity color="#2563eb" />
@@ -487,19 +487,39 @@ const App = () => {
 
       <div style={styles.list}>
         {[
-          ["Vitaminska bomba", "od 3000 RSD"],
-          ["Infuzija", "od 2500 RSD"],
-          ["Injekcija", "od 1000 RSD"],
-          ["Glutation 12000", "cena po dogovoru"],
-        ].map(([name, price]) => (
+          [
+            "Vitaminska bomba",
+            "Infuziona terapija sa kombinacijom vitamina i tečnosti. Namenjena je za oporavak, hidrataciju i podršku organizmu po proceni medicinskog osoblja."
+          ],
+          [
+            "Infuzija",
+            "Primena infuzione terapije prema potrebi pacijenta i dogovoru sa medicinskim osobljem. Termin se zakazuje nakon osnovnih podataka i saglasnosti pacijenta."
+          ],
+          [
+            "Injekcija",
+            "Davanje propisane injekcione terapije od strane medicinskog osoblja. Usluga se radi samo kada pacijent ima jasnu potrebu ili preporuku za terapiju."
+          ],
+          [
+            "Glutation 12000",
+            "Glutation infuziona terapija. Koristi se kao antioksidativna podrška organizmu i zakazuje se isključivo uz prethodno objašnjenje usluge i saglasnost pacijenta."
+          ],
+        ].map(([name, description]) => (
           <div key={name} style={styles.serviceCard}>
             <div>
               <h3 style={styles.terminName}>{name}</h3>
-              <p style={styles.terminService}>Medicinska usluga</p>
+              <p style={styles.terminService}>{description}</p>
             </div>
-            <strong style={{ color: "#2563eb" }}>{price}</strong>
           </div>
         ))}
+      </div>
+
+      <div style={styles.consentBox}>
+        <h3 style={styles.terminName}>Saglasnost pacijenta</h3>
+        <p style={styles.consentText}>
+          Zakazivanjem termina pacijent potvrđuje da je upoznat sa osnovnim opisom usluge,
+          da daje tačne kontakt podatke i da pristaje da bude kontaktiran radi potvrde termina.
+          Konačna primena usluge zavisi od procene medicinskog osoblja.
+        </p>
       </div>
     </div>
   );
@@ -841,10 +861,23 @@ const styles: Record<string, React.CSSProperties> = {
     border: "1px solid #e2e8f0",
     borderRadius: 22,
     padding: 16,
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
+    display: "block",
     gap: 12,
+  },
+  consentBox: {
+    marginTop: 18,
+    background: "#ffffff",
+    border: "1px solid #dbe3ef",
+    borderRadius: 22,
+    padding: 16,
+    boxShadow: "0 10px 30px rgba(15, 23, 42, 0.06)",
+  },
+  consentText: {
+    margin: "8px 0 0",
+    color: "#475569",
+    fontSize: 14,
+    lineHeight: 1.55,
+    fontWeight: 600,
   },
   bottomNav: {
     height: 82,
