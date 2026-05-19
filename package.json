@@ -9,17 +9,18 @@
   ],
   "main": "src/index.tsx",
   "dependencies": {
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
+    "firebase": "12.13.0",
     "lucide-react": "1.16.0",
-    "firebase": "12.13.0"
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
   },
   "devDependencies": {
     "@types/react": "18.2.38",
     "@types/react-dom": "18.2.15",
+    "@vitejs/plugin-react": "^4.2.1",
+    "pngjs": "^7.0.0",
     "typescript": "4.4.4",
-    "vite": "^5.0.11",
-    "@vitejs/plugin-react": "^4.2.1"
+    "vite": "^5.0.11"
   },
   "scripts": {
     "dev": "vite",
