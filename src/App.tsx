@@ -98,6 +98,7 @@ const services = [
     subtitle: "Infuziona vitaminska podrška",
     description:
       "Kombinacija tečnosti i vitamina za hidrataciju, oporavak i opštu podršku organizmu. Termin se potvrđuje nakon provere osnovnih podataka pacijenta.",
+    price: "3000 RSD",
     icon: "💧",
     color: "linear-gradient(135deg, #dbeafe, #eff6ff)",
   },
@@ -106,22 +107,25 @@ const services = [
     subtitle: "Infuziona terapija",
     description:
       "Primena infuzione terapije prema potrebi pacijenta i dogovoru sa medicinskim osobljem. Konačna primena zavisi od procene medicinskog osoblja.",
+    price: "2500 RSD",
     icon: "🩺",
     color: "linear-gradient(135deg, #dcfce7, #f0fdf4)",
   },
   {
-    name: "Injekcija",
-    subtitle: "Injekciona terapija",
+    name: "Hidrataciona infuzija",
+    subtitle: "Hidrataciona terapija",
     description:
-      "Davanje injekcione terapije od strane medicinskog osoblja. Usluga se zakazuje za pacijente koji imaju jasnu potrebu ili preporuku za terapiju.",
-    icon: "💉",
-    color: "linear-gradient(135deg, #fee2e2, #fff7ed)",
+      "Infuziona terapija za nadoknadu tečnosti i podršku hidrataciji organizma. Zakazuje se nakon osnovnih podataka pacijenta i potvrde termina.",
+    price: "2500 RSD",
+    icon: "💦",
+    color: "linear-gradient(135deg, #ccfbf1, #ecfeff)",
   },
   {
-    name: "Glutation 12000",
+    name: "Glutation",
     subtitle: "Glutation infuziona terapija",
     description:
-      "Glutation 12000 je infuziona antioksidativna podrška organizmu. Pacijent pre zakazivanja dobija objašnjenje usluge i potvrđuje saglasnost za kontakt i termin.",
+      "Glutation je infuziona antioksidativna podrška organizmu. Pacijent pre zakazivanja dobija objašnjenje usluge i potvrđuje saglasnost za kontakt i termin.",
+    price: "12000 RSD",
     icon: "✨",
     color: "linear-gradient(135deg, #f3e8ff, #eef2ff)",
   },
