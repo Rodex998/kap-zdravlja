@@ -83,6 +83,7 @@ type FormData = {
   terenski: boolean;
   napomena: string;
   saglasnost: boolean;
+  prihvataCenu: boolean;
 };
 
 type Toast = {
@@ -136,6 +137,7 @@ const initialFormData: FormData = {
   terenski: false,
   napomena: "",
   saglasnost: false,
+  prihvataCenu: false,
 };
 
 const App = () => {
@@ -262,6 +264,11 @@ const App = () => {
       return;
     }
 
+    if (!formData.prihvataCenu) {
+      showToast("Pacijent mora da potvrdi da prihvata cenu usluge.", "error");
+      return;
+    }
+
     try {
       await addDoc(
         collection(db, "artifacts", appId, "users", user.uid, "termini"),
@@ -369,7 +376,7 @@ const App = () => {
           <select
             value={formData.usluga}
             onChange={(e) =>
-              setFormData({ ...formData, usluga: e.target.value })
+              setFormData({ ...formData, usluga: e.target.value, prihvataCenu: false })
             }
             style={styles.input}
           >
