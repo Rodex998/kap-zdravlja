@@ -67,7 +67,6 @@ type Termin = {
   datum: string;
   vreme: string;
   adresa: string;
-  terenski: boolean;
   napomena: string;
   saglasnost: boolean;
   status: TerminStatus;
@@ -80,7 +79,6 @@ type FormData = {
   datum: string;
   vreme: string;
   adresa: string;
-  terenski: boolean;
   napomena: string;
   saglasnost: boolean;
   prihvataCenu: boolean;
@@ -138,7 +136,6 @@ const initialFormData: FormData = {
   datum: "",
   vreme: "",
   adresa: "",
-  terenski: false,
   napomena: "",
   saglasnost: false,
   prihvataCenu: false,
@@ -446,17 +443,6 @@ const App = () => {
             style={{ ...styles.input, minHeight: 80 }}
           />
 
-          <label style={styles.checkboxRow}>
-            <input
-              type="checkbox"
-              checked={formData.terenski}
-              onChange={(e) =>
-                setFormData({ ...formData, terenski: e.target.checked })
-              }
-            />
-            Terenska poseta
-          </label>
-
           <div style={styles.consentSmallBox}>
             <div style={styles.consentSmallHeader}>
               <ShieldCheck size={20} color="#2563eb" />
@@ -720,10 +706,6 @@ const App = () => {
                 <div style={styles.receiptRow}>
                   <span>Vreme</span>
                   <strong>{formData.vreme}</strong>
-                </div>
-                <div style={styles.receiptRow}>
-                  <span>Terenska poseta</span>
-                  <strong>{formData.terenski ? "Da" : "Ne"}</strong>
                 </div>
               </div>
 
