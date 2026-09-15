@@ -1,64 +1,48 @@
-# E-mail za Heliant — zahtev za pristup REST servisima (projekat: Kućno lečenje)
+# Mejl za Heliant — opis procesa + zahtev za povezivanje (kućno lečenje)
 
-> Ovo je zaseban projekat **kućnog lečenja** — nije povezan ni sa jednom drugom
-> aplikacijom. Dole je gotov tekst za slanje; popuni polja u uglastim zagradama
-> `[...]`. Red o radniku RR1672 / DZ Subotica ostavi ako projekat ide kroz tvoj
-> nalog u toj ustanovi; obriši ga ako je privatni poduhvat van DZ Subotica.
+> Gotov tekst za slanje. Popuni polja u uglastim zagradama `[...]` i pošalji na
+> tačnu adresu Heliant-a. Bez podataka pacijenata — opisana su samo polja naloga.
 
 ---
 
-**Za:** `[integracije@heliant.rs / podrska@heliant.rs — proveriti tačnu adresu]`
-**Cc:** `[po potrebi: IT služba ustanove]`
-**Naslov:** Zahtev za pristup REST web servisima — integracija aplikacije za kućno lečenje
+**Za:** `[kontakt osoba u Heliant-u — integracije/podrška]`
+**Naslov:** Kućno lečenje — opis procesa i zahtev za povezivanje sa Heliant ZIS-om
 
 Poštovani,
 
-razvijam aplikaciju za **kućno lečenje** (evidencija i zakazivanje kućnih poseta,
-usluga na terenu i realizacije) i želim da je povežem sa **Heliant Zdravstvenim
-informacionim sistemom** preko vaših **REST web servisa**, kako bismo radili nad
-istim podacima umesto da vodimo paralelnu evidenciju.
+kao što ste tražili, u nastavku je opis kako trenutno funkcioniše naš proces
+kućnog lečenja, šta bismo želeli da automatizujemo i pitanja za vas.
 
-`[Opciono, ako ide kroz ustanovu:]` Vaš sistem već koristim kao registrovani
-radnik u ustanovi **Dom zdravlja Subotica** (ZIS v8.4), korisnik
-**gligorije.rodic (Gligorije Rodić), šifra radnika RR1672**.
+## Kako proces funkcioniše (trenutno stanje)
 
-Da bismo „govorili istim jezikom" i krenuli sa integracijom, molim vas za sledeće:
+1. **Prijem naloga.** Medicinska sestra u ambulanti kreira dokument „PRIJAVA TERENA" i šalje ga kao **poruku unutar Helianta** na zajednički nalog **„PRIJAVA TERENA KL" (korisnik prijava.terena)**, ogranak 6. Nalog je u prilogu kao Word dokument (.docx).
 
-## 1. Dokumentacija i pristup
-1. Tehnička specifikacija REST servisa — **OpenAPI/Swagger** (ili WSDL ako je SOAP).
-2. **Base URL** za TEST i za PRODUKCIJU.
-3. Način **autentikacije/autorizacije** (OAuth2 / API ključ / token / mTLS klijentski sertifikat) i postupak dobijanja kredencijala.
-4. Mrežni preduslovi: **VPN, IP whitelist, portovi, sertifikati**.
-5. Verzionisanje API-ja i verzija ZIS-a na koju se povezujemo.
-6. Ograničenja: rate-limit, paginacija, timeout, maksimalan broj poziva.
+2. **Sadržaj naloga.** Dokument sadrži: pacijent (ime i prezime, adresa, JMBG, telefon, partija), lekar, dijagnoze (MKB šifre), terapiju (lek, doza i dinamika — npr. ujutru/uveče), period primene (od–do / ukupno dana), da li je lek donet iz bolnice ili se kupuje, i napomenu (npr. na teret RFZO).
 
-## 2. Servisi koji su nam potrebni (funkcionalno, redom kako ih zovemo)
-1. **Identifikacija pacijenta** — pretraga/validacija po **LBO** i/ili **JMBG**; povratni podaci: ime, prezime, pol, datum rođenja, izabrani lekar, matična filijala.
-2. **Šifarnik usluga/procedura** — da naše usluge kućnog lečenja `[npr. previjanje, davanje injekcije/infuzije, uzimanje uzoraka, kontrola vitalnih parametara, nega]` mapiramo na vaše **šifre usluga**.
-3. **Zakazivanje kućne posete / termina** — kreiranje termina u ZIS-u sa poljima: pacijent (LBO/JMBG), datum, vreme, usluga, **adresa kućne posete**, izvršilac, napomena; povratna vrednost: ID termina i status.
-4. **Promena statusa termina** — Zakazano → Realizovano / Otkazano / Odloženo.
-5. **Evidencija realizovane usluge** — upis izvršene usluge na terenu (ko, kada, koja usluga), po potrebi kratak nalaz/napomena i utrošeni materijal.
-6. **Osnovni medicinski podaci uz saglasnost** (opciono) — alergije, tekuća terapija, hronične bolesti/relevantne dijagnoze (bitno za bezbednost na terenu).
-7. **Šifarnici (read-only)** — MKB-10 dijagnoze, usluge, organizacione jedinice/ustanove, izabrani lekari — radi mapiranja.
-8. **Sinhronizacija** — kako sprečiti duple termine (idempotency / eksterna referenca) i kako povlačiti izmene (webhook ili polling).
+3. **Dispečer.** Dispečer preuzima nalog iz Heliant poruke i raspoređuje medicinske tehničare po adresama na terenu.
 
-## 3. Bezbednost i pravni okvir
-1. Obrada podataka o ličnosti i zdravstvenih podataka (ZZPL / GDPR) i **ugovor o obradi**.
-2. Kako se prosleđuje i čuva **saglasnost pacijenta**.
-3. Logovanje i revizija pristupa; pod kojim nalogom/ulogom radi integracija.
+4. **Teren.** Medicinski tehničar odlazi na adresu pacijenta i daje terapiju prema rasporedu (često više dana zaredom, više puta dnevno).
 
-## 4. Organizaciono i komercijalno
-1. Da li integracija ide **direktno preko Heliant-a** ili preko nadređene sabirnice (IZJZ / RFZO / eZdravlje).
-2. **Uslovi korišćenja i cena** pristupa servisima (jednokratno + održavanje).
-3. Kontakt tehničke osobe kod vas i predlog kratkog uvodnog sastanka.
+5. **Zatvaranje terena.** Tehničar po završetku evidentira da je teren obavljen i koju je terapiju dao.
 
-Aplikacija je u izradi i spremna da se prilagodi vašem modelu podataka i
-šifarnicima. Za početak nam je dovoljno **TEST** okruženje i dokumentacija, pa
-možemo prvo da pustimo najjednostavniji tok (identifikacija pacijenta) i dalje
-gradimo.
+6. **Povratni upis u Heliant.** Realizovana terapija se trenutno **ručno prekucava** nazad u Heliant.
 
-Unapred hvala i srdačan pozdrav,
+**Napomena o okruženju:** Heliant kod nas radi u okviru **interne mreže** ustanove.
+
+## Šta želimo da automatizujemo
+- Automatsko **preuzimanje naloga** iz Heliant poruka (umesto ručnog skidanja .docx priloga).
+- Automatski **upis realizovane terapije** nazad u Heliant karton (umesto ručnog prekucavanja).
+
+## Pitanja za vas
+1. Da li nudite **REST web servise** za: (a) čitanje poruka/naloga radnika i (b) upis realizovane usluge/terapije u karton?
+2. Pošto Heliant radi na internoj mreži — kako predlažete **„online" povezivanje** (VPN, gateway/most, ili hosting kod vas)?
+3. Šta vam je potrebno od nas (tehnički i formalno) da bismo ovo omogućili?
+4. **Uslovi i cena** pristupa servisima, i predlog kratkog uvodnog sastanka.
+
+Hvala unapred. Stojimo na raspolaganju za sva dodatna pojašnjenja.
+
+Srdačan pozdrav,
 **Gligorije Rodić**
-`[naziv projekta / prakse]`
-`[PIB / matični broj — ako postoji pravno lice]`
-`[telefon]` · `gilerodic998@gmail.com`
+`[naziv projekta / ordinacije]`
+`[telefon]` · gilerodic998@gmail.com
+*(korisnik Heliant ZIS-a, Dom zdravlja Subotica)*
